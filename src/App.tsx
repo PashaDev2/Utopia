@@ -2,7 +2,7 @@ import "./App.css";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Star } from "./Star";
 import styles from "./App.module.scss";
-import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
+import { PerspectiveCamera } from "@react-three/drei";
 import { BgPlane } from "./BgPlane";
 import { Effects } from "./Effects";
 import * as THREE from "three";
