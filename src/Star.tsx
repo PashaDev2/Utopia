@@ -1,9 +1,9 @@
 import * as THREE from "three";
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useGLTF, useAnimations, MeshTransmissionMaterial } from "@react-three/drei";
 import { GLTF } from "three-stdlib";
-import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { useFrame, useLoader } from "@react-three/fiber";
 import { useControls } from "leva";
 
@@ -19,7 +19,6 @@ type GLTFResult = GLTF & {
         Bone006: THREE.Bone;
         Bone007: THREE.Bone;
     };
-    materials: {};
     animations: GLTFAction[];
 };
 
@@ -27,20 +26,21 @@ type ActionName = "Star1";
 interface GLTFAction extends THREE.AnimationClip {
     name: ActionName;
 }
-type ContextType = Record<
-    string,
-    React.ForwardRefExoticComponent<
-        JSX.IntrinsicElements["skinnedMesh"] | JSX.IntrinsicElements["bone"]
-    >
->;
+// type ContextType = Record<
+//     string,
+//     React.ForwardRefExoticComponent<
+//         JSX.IntrinsicElements["skinnedMesh"] | JSX.IntrinsicElements["bone"]
+//     >
+// >;
 
 export function Star(props: JSX.IntrinsicElements["group"]) {
     const group = useRef<THREE.Group>();
-    const { nodes, animations } = useLoader(GLTFLoader, "/Star.glb", loader => {
+    const gltf = useLoader(GLTFLoader, "/Star.glb", loader => {
         const dracoLoader = new DRACOLoader();
         dracoLoader.setDecoderPath("./draco/");
         loader.setDRACOLoader(dracoLoader);
-    });
+    }) as GLTFResult;
+    const { nodes, animations } = gltf;
     const { actions } = useAnimations(animations, group);
 
     const controls = useControls({
