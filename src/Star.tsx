@@ -36,7 +36,7 @@ type ContextType = Record<
 
 export function Star(props: JSX.IntrinsicElements["group"]) {
     const group = useRef<THREE.Group>();
-    const { nodes, animations } = useLoader(GLTFLoader, "/Star.glb", loader => {
+    const { nodes, animations } = useLoader(GLTFLoader, "/Star2.glb", loader => {
         const dracoLoader = new DRACOLoader();
         dracoLoader.setDecoderPath("./draco/");
         loader.setDRACOLoader(dracoLoader);
@@ -44,26 +44,26 @@ export function Star(props: JSX.IntrinsicElements["group"]) {
     const { actions } = useAnimations(animations, group);
 
     const controls = useControls({
-        roughness: { value: 0.2, min: 0, max: 1, step: 0.01 },
-        metalness: { value: 1, min: 0, max: 1, step: 0.01 },
-        samples: { value: 10, min: 1, max: 32, step: 1 },
+        roughness: { value: 0.05, min: 0, max: 1, step: 0.01 },
+        metalness: { value: 0, min: 0, max: 1, step: 0.01 },
+        samples: { value: 20, min: 1, max: 32, step: 1 },
         meshPhysicalMaterial: false,
         transmissionSampler: false,
         backside: false,
         resolution: { value: 2048, min: 256, max: 2048, step: 256 },
         transmission: { value: 1, min: 0, max: 1 },
-        thickness: { value: 3.5, min: 0, max: 10, step: 0.01 },
-        ior: { value: 1.5, min: 1, max: 5, step: 0.01 },
-        chromaticAberration: { value: 0.06, min: 0, max: 1 },
-        anisotropy: { value: 0.1, min: 0, max: 1, step: 0.01 },
-        distortion: { value: 0.0, min: 0, max: 1, step: 0.01 },
+        thickness: { value: 0.5, min: 0, max: 10, step: 0.01 },
+        ior: { value: 1.1, min: 1, max: 5, step: 0.01 },
+        chromaticAberration: { value: 0.05, min: 0, max: 1 },
+        anisotropy: { value: 1, min: 0, max: 1, step: 0.01 },
+        distortion: { value: 1, min: 0, max: 1, step: 0.01 },
         distortionScale: { value: 0.3, min: 0.01, max: 1, step: 0.01 },
-        temporalDistortion: { value: 0.5, min: 0, max: 1, step: 0.01 },
+        temporalDistortion: { value: 0.05, min: 0, max: 1, step: 0.01 },
         clearcoat: { value: 1, min: 0, max: 1 },
         attenuationDistance: { value: 0.5, min: 0, max: 10, step: 0.01 },
         attenuationColor: "#ffffff",
-        color: "#c9ffa1",
-        bg: "#839681",
+        color: "#d6d6d6",
+        bg: "#ffffff",
     });
 
     useEffect(() => {
