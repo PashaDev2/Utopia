@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { useCallback, useEffect, useRef } from "react";
-import { useGLTF, useAnimations, MeshTransmissionMaterial } from "@react-three/drei";
+import { useAnimations, MeshTransmissionMaterial } from "@react-three/drei";
 import { GLTF } from "three-stdlib";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -154,7 +154,7 @@ export function Star(props: JSX.IntrinsicElements["group"]) {
                 onPointerEnter={handlePointerEnter}
                 onPointerLeave={handlePointerLeave}
                 onPointerMove={handlePointerMove}
-                {...props}
+                {...(props as unknown as JSX.IntrinsicElements["mesh"])}
                 onClick={handleClick()}>
                 <planeGeometry args={[1, 1]} />
                 <meshBasicMaterial visible={false} />
