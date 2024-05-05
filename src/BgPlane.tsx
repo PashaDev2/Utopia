@@ -1,12 +1,13 @@
-import { useThree } from "@react-three/fiber";
-import { useTexture } from "@react-three/drei";
+import { useFrame, useThree } from "@react-three/fiber";
+import { useTexture, useVideoTexture } from "@react-three/drei";
 import * as THREE from "three";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
-export const BgPlane = (props: JSX.IntrinsicElements["mesh"]) => {
+export const BgPlane = (props: JSX.IntrinsicElements["mesh"] & { texture: THREE.Texture }) => {
     const texture = useTexture("/1.png");
     const envTexture = useTexture("/2.jpg");
-    envTexture.mapping = THREE.EquirectangularReflectionMapping;
+    const videoTexture = useVideoTexture("/gif.mp4");
+    const ref = useRef<THREE.MeshStandardMaterial>();
 
     const scene = useThree(({ gl, scene }) => {
         gl.setClearColor(new THREE.Color("#d6d6d6"));
@@ -14,20 +15,32 @@ export const BgPlane = (props: JSX.IntrinsicElements["mesh"]) => {
     });
 
     useEffect(() => {
-        if (scene) {
-            scene.background = new THREE.Color("#d6d6d6");
+        if (scene && envTexture) {
+            videoTexture.needsUpdate = true;
+            scene.background = videoTexture;
             scene.environment = envTexture;
         }
-    }, [envTexture]);
+    }, [scene]);
+
+    useFrame(() => {
+        if (ref.current) {
+            ref.current.needsUpdate = true;
+            ref.current.emissiveIntensity = 1;
+            ref.current.map.needsUpdate = true;
+        }
+        if (envTexture) envTexture.needsUpdate = true;
+    });
 
     return (
         <mesh {...props}>
             <planeGeometry args={[3.5, 3.5]} />
             <meshStandardMaterial
+                ref={ref}
                 side={THREE.DoubleSide}
                 emissiveIntensity={1}
                 emissiveMap={texture}
-                map={texture}
+                map={videoTexture}
+                visible={false}
                 transparent
             />
         </mesh>

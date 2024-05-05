@@ -1,11 +1,12 @@
 import * as THREE from "three";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useGLTF, useAnimations, MeshTransmissionMaterial } from "@react-three/drei";
 import { GLTF } from "three-stdlib";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { useFrame, useLoader } from "@react-three/fiber";
+import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import { useControls } from "leva";
+import { useSpring, animated } from "@react-spring/three";
 
 type GLTFResult = GLTF & {
     nodes: {
@@ -42,6 +43,8 @@ export function Star(props: JSX.IntrinsicElements["group"]) {
     }) as GLTFResult;
     const { nodes, animations } = gltf;
     const { actions } = useAnimations(animations, group);
+    const isOver = useRef(false);
+    const { width, height } = useThree(state => state.size);
 
     const controls = useControls({
         roughness: { value: 0.05, min: 0, max: 1, step: 0.01 },
@@ -73,56 +76,136 @@ export function Star(props: JSX.IntrinsicElements["group"]) {
             actions.Star1.play();
         }
     }, [nodes]);
+
     const materialRef = useRef<THREE.MeshPhysicalMaterial>(null);
+
     useFrame(() => {
         if (materialRef.current) {
             materialRef.current.needsUpdate = true;
         }
     });
 
+    const [springs, api] = useSpring(
+        () => ({
+            scale: 1,
+            position: [0, 0],
+            rotation: [0, 0, 0],
+            config: key => {
+                switch (key) {
+                    case "scale":
+                        return {
+                            mass: 4,
+                            friction: 10,
+                        };
+                    case "position":
+                        return { mass: 4, friction: 220 };
+                    default:
+                        return {};
+                }
+            },
+        }),
+        []
+    );
+
+    const handlePointerEnter = () => {
+        api.start({
+            scale: 1.5,
+        });
+    };
+
+    const handlePointerLeave = () => {
+        api.start({
+            scale: 1,
+        });
+    };
+
+    const handlePointerMove = useCallback(
+        e => {
+            if (isOver.current) {
+                const x = (e.offsetX / width) * 2 - 1;
+                const y = (e.offsetY / height) * -2 + 1;
+
+                api.start({
+                    position: [x * 5, y * 2],
+                });
+            }
+        },
+        [api, width, height]
+    );
+
+    const handleClick = useCallback(() => {
+        let clicked = false;
+
+        return () => {
+            clicked = !clicked;
+            api.start({
+                rotation: clicked ? [0, 0, Math.PI] : [0, 0, 0],
+                config: {
+                    mass: 4,
+                    friction: 220,
+                },
+            });
+        };
+    }, []);
+
     return (
-        <group ref={group} {...props} dispose={null}>
-            <group name="Scene">
-                <group name="Armature">
-                    <primitive object={nodes.Bone} />
-                    <primitive object={nodes.Bone001} />
-                    <primitive object={nodes.Bone002} />
-                    <primitive object={nodes.Bone003} />
-                    <primitive object={nodes.Bone004} />
-                    <primitive object={nodes.Bone005} />
-                    <primitive object={nodes.Bone006} />
-                    <primitive object={nodes.Bone007} />
+        <>
+            <mesh
+                onPointerEnter={handlePointerEnter}
+                onPointerLeave={handlePointerLeave}
+                onPointerMove={handlePointerMove}
+                {...props}
+                onClick={handleClick()}>
+                <planeGeometry args={[1, 1]} />
+                <meshBasicMaterial visible={false} />
+            </mesh>
+
+            <animated.group
+                ref={group}
+                {...props}
+                scale={springs.scale}
+                rotation={springs.rotation as unknown as THREE.Euler}
+                dispose={null}>
+                <group name="Scene">
+                    <group name="Armature">
+                        <primitive object={nodes.Bone} />
+                        <primitive object={nodes.Bone001} />
+                        <primitive object={nodes.Bone002} />
+                        <primitive object={nodes.Bone003} />
+                        <primitive object={nodes.Bone004} />
+                        <primitive object={nodes.Bone005} />
+                        <primitive object={nodes.Bone006} />
+                        <primitive object={nodes.Bone007} />
+                    </group>
+                    <skinnedMesh
+                        name="Utopia_Star"
+                        geometry={nodes.Utopia_Star.geometry}
+                        skeleton={nodes.Utopia_Star.skeleton}>
+                        <MeshTransmissionMaterial
+                            ref={materialRef}
+                            roughness={controls.roughness}
+                            metalness={controls.metalness}
+                            samples={controls.samples}
+                            transmissionSampler={controls.transmissionSampler}
+                            backside={controls.backside}
+                            resolution={controls.resolution}
+                            transmission={controls.transmission}
+                            thickness={controls.thickness}
+                            ior={controls.ior}
+                            chromaticAberration={controls.chromaticAberration}
+                            anisotropy={controls.anisotropy}
+                            distortion={controls.distortion}
+                            distortionScale={controls.distortionScale}
+                            temporalDistortion={controls.temporalDistortion}
+                            clearcoat={controls.clearcoat}
+                            attenuationDistance={controls.attenuationDistance}
+                            attenuationColor={controls.attenuationColor}
+                            color={controls.color}
+                            background={new THREE.Color(controls.bg)}
+                        />
+                    </skinnedMesh>
                 </group>
-                <skinnedMesh
-                    name="Utopia_Star"
-                    geometry={nodes.Utopia_Star.geometry}
-                    skeleton={nodes.Utopia_Star.skeleton}>
-                    <MeshTransmissionMaterial
-                        ref={materialRef}
-                        roughness={controls.roughness}
-                        metalness={controls.metalness}
-                        samples={controls.samples}
-                        transmissionSampler={controls.transmissionSampler}
-                        backside={controls.backside}
-                        resolution={controls.resolution}
-                        transmission={controls.transmission}
-                        thickness={controls.thickness}
-                        ior={controls.ior}
-                        chromaticAberration={controls.chromaticAberration}
-                        anisotropy={controls.anisotropy}
-                        distortion={controls.distortion}
-                        distortionScale={controls.distortionScale}
-                        temporalDistortion={controls.temporalDistortion}
-                        clearcoat={controls.clearcoat}
-                        attenuationDistance={controls.attenuationDistance}
-                        attenuationColor={controls.attenuationColor}
-                        color={controls.color}
-                        background={new THREE.Color(controls.bg)}
-                    />
-                </skinnedMesh>
-            </group>
-        </group>
+            </animated.group>
+        </>
     );
 }
-
-useGLTF.preload("/Star-transformed.glb");
